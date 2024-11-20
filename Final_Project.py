@@ -2,9 +2,16 @@
 Name: Salomon Salcedo
 Class: CS230 - 5
 Data: Fortune 500 Corporate Headquarters
-URL:
+URL: https://salomonsalcedofinalprojectcs230.streamlit.app/
 
-Description:
+Description: This program is an interactive data-driven
+web-based Python application that uses real-world data.
+The program uses a database with information of Fortune 500
+Corporate Headquarters, including its location, financial metrics, and number of employees.
+This data is presented in an interactive way through visual elements:
+maps, stacked bar charts, scatter plots, and tables.
+The users can filter the data using sidebars with options for location, profit, and rank.
+Lastly, there is a revenue summary statistics visual to grasp an even more understanding of the whole data.
 """
 import streamlit as st  # Streamlit to build the web app
 import pandas as pd  # Pandas to manipulate data
