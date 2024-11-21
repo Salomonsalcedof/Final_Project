@@ -19,6 +19,8 @@ import plotly.express as px  # Plotly Express to create visualizations
 
 
 # Setting the page layout to wide mode for a more expansive view
+#[ST4] Customized page design features
+
 st.set_page_config(page_title="Fortune 500 Data Dashboard", layout="wide")
 
 
@@ -33,15 +35,15 @@ including locations, financial metrics, and number of employees. Have fun!
 all the information (or just leave the states and county filters blanc to see every HQ).**
 """)
 
-@st.cache_data  # Uses the loaded data (cache) instead of loading it from the source
+@st.cache_data  # Uses the loaded data (cache) instead of loading it from the source. EXTRA CREDIT!
 # [PY3] Error checking with try/except
 def load_data():
     try:
-        df = pd.read_excel('fortune_500_hq.xlsx')
+        df = pd.read_excel('fortune_500_hq.xlsx') # I downloaded it as an Excel file
         return df
-    except Exception as e:
-        st.error(f"Error loading data: {e}")  # Error if data is not loading
-        return pd.DataFrame()  # Empty DataFrame if there is an error
+    except FileNotFoundError:
+        st.error("Error: File not found.")
+        return pd.DataFrame()  # Returns empty DataFrame if there is an error
 
 df = load_data()  # Load data into the app
 
@@ -50,6 +52,7 @@ df = load_data()  # Load data into the app
 # [DA9] Add a new column or perform calculations on DataFrame columns
 # [PY4] A list comprehension
 df['COSTS'] = [revenue - profit for revenue, profit in zip(df['REVENUES'], df['PROFIT'])]
+
 # [DA1] Clean or manipulate data, lambda function (required)
 df = df[df.apply(lambda row: row.notna().all(), axis=1)]
 
@@ -61,17 +64,16 @@ st.sidebar.title("Filter Fortune 500 HQ")
 st.sidebar.markdown("Please choose one or multiple locations to display the HQ data.")
 
 # State Filter (Multiple selections and display all by default)
-# [DA4] Filter data by one condition
+# [ST1] Streamlit widget: multiselect
 state_filter = st.sidebar.multiselect(
     "Select States",
     options=df['STATE'].unique(),
 )
 st.sidebar.markdown("Select one or more states to view HQ based in those regions. Leave blank to show all.")
 
-# Adjusting the data filtering based on state selection
 # [DA4] Filter data by one condition
-if "All" in state_filter or not state_filter:
-    filtered_df = df  # If "All" is selected or no filter is applied, show all data
+if not state_filter:  # If no filter is applied, show all data
+    filtered_df = df
 else:
     filtered_df = df[df['STATE'].isin(state_filter)]
 
@@ -81,30 +83,40 @@ county_filter = st.sidebar.multiselect("Select Counties", options=filtered_df['C
 st.sidebar.markdown("Choose counties to narrow your company search, "
                     "or leave blank to show all companies in the chosen states.")
 
+
 # Profit Filter
 st.sidebar.header("Profit Filters")
-# [ST2] Streamlit widget: slider, [DA5] Filter data by two or more conditions with AND or OR
+# [ST2] Streamlit widget: slider
 profit_range = st.sidebar.slider("Select Profit Range", min_value=int(df['PROFIT'].min()), max_value=int(df['PROFIT'].max()), value=(0, 100000))
-st.sidebar.markdown("Filter companies based on their profit range– view their financial performance.")
+st.sidebar.markdown("Filter companies based on their profit range to analyze their financial performance.")
 
-# [ST3] Streamlit widget: slider
+# [ST2] Streamlit widget: slider
 top_n_companies = st.sidebar.slider("Select # of Top Companies by Profit", min_value=1, max_value=50, value=5)
 st.sidebar.markdown("Choose the number of top-performing companies to display.")
 
 # Rank Filter
 st.sidebar.header("Rank Filter")
-# [DA5] Filter data by two or more conditions with AND or OR
+# [ST2] Streamlit widget: slider
+# Rank Filter
 rank_range = st.sidebar.slider("Select Rank Range", min_value=int(df['RANK'].min()), max_value=int(df['RANK'].max()), value=(1, 50))
-st.sidebar.markdown("Filter all your companies based on their rank range. "
-                    "**This filter affects the bar and scatter graph!!**")
+st.sidebar.markdown("Filter all your companies based on their rank range. **This filter affects the bar and scatter graph!!**")
 
-# MAIN APP
+# [ST3] Streamlit widget: selectbox
+st.sidebar.header("Select Financial Metric")
+st.sidebar.markdown("Choose a financial metric to view the summary statistics.")
+metric = st.sidebar.selectbox(
+    "Select Financial Metric to View",
+    options=['REVENUES', 'PROFIT', 'COSTS']
+)
+
+
+# MAIN APP - Graphs
 
 # Full Map View
 st.header("Corporate Headquarters Based on Location Map")
 st.markdown("Explore the locations of corporate headquarters across the selected state and counties.")
 
-# [MAP/VIZ3] At least one detailed map with hover and other features
+# [MAP/VIZ4] At least one detailed map with hover and other features
 # Map Plot (after filtering by state and county)
 filtered_county_df = filtered_df[filtered_df['COUNTY'].isin(county_filter)] if county_filter else filtered_df
 fig_map = px.scatter_mapbox(
@@ -114,16 +126,16 @@ fig_map = px.scatter_mapbox(
     hover_name='NAME',
     hover_data={'RANK': True, 'EMPLOYEES': True, 'REVENUES': True, 'PROFIT': True, 'COUNTY': True},  # Additional info on hover
     color='STATE',  # Color by state
-    size='REVENUES',  # Points size vary by revenue
+    size='REVENUES',  # Points size vary by revenue EXTRA CREDIT
     title="Corporate Headquarters Locations",
     mapbox_style="carto-positron"
 )
 fig_map.update_layout(
     mapbox=dict(
-        center=dict(lat=38.7946, lon=-106.5348),  # Center map on the US (actual U.S. coordinates)
+        center=dict(lat=38.7946, lon=-106.5348),  # Center map on the US (actual U.S. coordinates, very cool)
         zoom=2.5
     ),
-    margin=dict(l=0, r=0, t=30, b=0)  # Set map margins
+    margin=dict(l=0, r=0, t=30, b=0)  # Set map margins, creates more height
 )
 st.plotly_chart(fig_map)  # Display map plot
 
@@ -200,34 +212,35 @@ fig_scatter.update_layout(
 fig_scatter.update_traces(marker=dict(size=10, opacity=0.8))
 st.plotly_chart(fig_scatter)
 
-# Summary Statistics and Top Revenue Companies
+# MAIN APP - Summary Statistics and Top Revenue Companies
 st.header("Summary Statistics")
 
 # [PY1] Function with two or more parameters, one with a default value
 # [PY2] Function that returns more than one value
-# [VIZ4] Different chart with titles, colors, labels (Table in this case)
+# [VIZ3] Different chart with titles, colors, labels (Table)
 def calculate_statistics(data, column, top_n=500):
-    mean_value = f"${data[column].mean():,.2f}"  # Calculate and format mean revenue with 2 decimal points, a comma separator, and a dollar sign
+    mean_value = f"${data[column].mean():,.2f}"  # Format mean with 2 decimal points, a comma separator, and a dollar sign
     top_companies = data.nlargest(top_n, column)[['NAME', column]]
     return mean_value, top_companies
 
-mean_revenue, top_revenue_companies = calculate_statistics(filtered_df, 'REVENUES')  # Calculate statistics for revenue
-st.write("Mean Revenue:", mean_revenue)  # Display mean revenue
+mean_value, top_metric_companies = calculate_statistics(filtered_df, metric)  # Calculate statistics for selected metric
+st.write(f"Mean {metric.title()}:", mean_value)  # Display mean value
 
-# Customized width and height of the table
-st.write("Top Companies by Revenue")
-st.dataframe(top_revenue_companies, use_container_width=True, height=500)
+st.write(f"Top Companies by {metric.title()}")
+st.dataframe(top_metric_companies, use_container_width=True, height=500)# Customized width and height of the table
+
 
 
 # Data Column Descriptions
-st.sidebar.header("Data Column Descriptions")  # Section for column descriptions
+st.sidebar.header("Data Column Descriptions")  # Column descriptions
 # [PY5] A dictionary where you write code to access its keys, values, or items
 column_descriptions = {
     "RANK": "Company rank in the Fortune 500 list",
     "NAME": "Company name",
     "EMPLOYEES": "Number of employees",
     "REVENUES": "Annual revenues (in USD)",
-    "PROFIT": "Net profit (in USD)"
+    "PROFIT": "Net profit (in USD)",
+    "COSTS": "Annual Costs (in USD)"
 }
 for col, desc in column_descriptions.items():
-    st.sidebar.write(f"**{col}**: {desc}")  # Display column descriptions in the sidebar
+    st.sidebar.write(f"{col}: {desc}")  # Display column descriptions in the sidebar
