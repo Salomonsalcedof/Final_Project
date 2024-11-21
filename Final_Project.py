@@ -85,7 +85,8 @@ st.sidebar.markdown("Choose counties to narrow your company search, "
 
 
 # Profit Filter
-st.sidebar.header("Profit Filters - based on States")
+st.sidebar.header("Based on States...")
+st.sidebar.header("Profit Filters")
 # [ST2] Streamlit widget: slider
 profit_range = st.sidebar.slider("Select Profit Range", min_value=int(df['PROFIT'].min()), max_value=int(df['PROFIT'].max()), value=(0, 100000))
 st.sidebar.markdown("Filter companies based on their profit range to analyze their financial performance.")
