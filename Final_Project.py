@@ -85,7 +85,7 @@ st.sidebar.markdown("Choose counties to narrow your company search, "
 
 
 # Profit Filter
-st.sidebar.header("Profit Filters")
+st.sidebar.header("Profit Filters - based on States")
 # [ST2] Streamlit widget: slider
 profit_range = st.sidebar.slider("Select Profit Range", min_value=int(df['PROFIT'].min()), max_value=int(df['PROFIT'].max()), value=(0, 100000))
 st.sidebar.markdown("Filter companies based on their profit range to analyze their financial performance.")
@@ -110,7 +110,7 @@ metric = st.sidebar.selectbox(
 )
 
 
-# MAIN APP - Graphs
+# MAIN APP - Graphs - Tables
 
 # Full Map View
 st.header("Corporate Headquarters Based on Location Map")
@@ -118,7 +118,7 @@ st.markdown("Explore the locations of corporate headquarters across the selected
 
 # [MAP/VIZ4] At least one detailed map with hover and other features
 # Map Plot (after filtering by state and county)
-filtered_county_df = filtered_df[filtered_df['COUNTY'].isin(county_filter)] if county_filter else filtered_df
+filtered_county_df = filtered_df[filtered_df['COUNTY'].isin(county_filter)] if county_filter else filtered_df # Used rows with selected counties, if any
 fig_map = px.scatter_mapbox(
     filtered_county_df,
     lat='LATITUDE',  # Latitude column
@@ -151,7 +151,7 @@ st.subheader(f"Top {top_n_companies} Companies by Profit")
 st.write(top_profit_df[['NAME', 'RANK', 'EMPLOYEES', 'PROFIT', 'REVENUES']])  # Display top companies by profit
 
 # Apply the rank filter to the filtered data for the scatter plot
-filtered_ranked_df = filtered_df[(filtered_df['RANK'] >= rank_range[0]) & (filtered_df['RANK'] <= rank_range[1])]
+filtered_ranked_df = filtered_df[(filtered_df['RANK'] >= rank_range[0]) &  (filtered_df['RANK'] <= rank_range[1])] # Extra Credit!
 
 # Stacked Bar Graph of Revenue, Costs, and Profit by Rank
 st.header("Revenue, Costs, and Profit by Company")
@@ -183,6 +183,7 @@ fig_bar.update_layout(
 )
 st.plotly_chart(fig_bar)
 
+
 # Scatter Plot of Employees vs Revenue
 st.header("Employees vs Revenue")
 st.markdown("This scatter graph shows the relationship between the number of employees and revenue for each company within the selected rank range.")
@@ -212,7 +213,7 @@ fig_scatter.update_layout(
 fig_scatter.update_traces(marker=dict(size=10, opacity=0.8))
 st.plotly_chart(fig_scatter)
 
-# MAIN APP - Summary Statistics and Top Revenue Companies
+# MAIN APP - Summary Statistics
 st.header("Summary Statistics")
 
 # [PY1] Function with two or more parameters, one with a default value
@@ -230,8 +231,7 @@ st.write(f"Top Companies by {metric.title()}")
 st.dataframe(top_metric_companies, use_container_width=True, height=500)# Customized width and height of the table
 
 
-
-# Data Column Descriptions
+# Sidebar - Column Descriptions
 st.sidebar.header("Data Column Descriptions")  # Column descriptions
 # [PY5] A dictionary where you write code to access its keys, values, or items
 column_descriptions = {
