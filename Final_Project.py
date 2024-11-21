@@ -146,7 +146,7 @@ st.header("Filtered Companies by Profit")
 # [DA5] Filter data by two or more conditions with AND or OR
 filtered_profit_df = filtered_df[(filtered_df['PROFIT'] >= profit_range[0]) & (filtered_df['PROFIT'] <= profit_range[1])]
 # [DA3] Find Top largest or smallest values of a column
-top_profit_df = filtered_df.nlargest(top_n_companies, 'PROFIT')
+top_profit_df = filtered_df.nlargest(top_n_companies, 'PROFIT') #top_n_companies = profit filter slider
 st.write(filtered_profit_df[['NAME', 'RANK', 'EMPLOYEES', 'PROFIT', 'REVENUES']])  # Display filtered companies
 st.subheader(f"Top {top_n_companies} Companies by Profit")
 st.write(top_profit_df[['NAME', 'RANK', 'EMPLOYEES', 'PROFIT', 'REVENUES']])  # Display top companies by profit
@@ -172,7 +172,7 @@ fig_bar = px.bar(
 # Customize layout
 fig_bar.update_layout(
     title={
-        'text': "Employees vs Revenue",
+        'text': "Revenue, Costs, and Profit by Company",
         'x': 0.5,  # Center the title
         'xanchor': 'center',  # Make sure the anchor is in the middle
         'yanchor': 'top'},
